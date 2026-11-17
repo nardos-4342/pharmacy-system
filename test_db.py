@@ -21,7 +21,7 @@ CREATE TABLE products (
     unit TEXT,
     buyingprice REAL,
     sellingprice REAL,
-    reorder INTEGER
+    reorder INTEGER NOT NULL DEFAULT 0
 );
     
 CREATE TABLE batches(
@@ -56,18 +56,9 @@ VALUES ('Paracetamol', 'box', 10, 12.5, 20),
        ('Amoxicillin', 'strip', 22, 30, 10);
 
 INSERT INTO batches (productid, batchnumber, expirationdate, quantity)
-VALUES (1, 'B001', '2027-03-15', 100),
-       (1, 'B002', '2027-08-20', 200),
-       (2, 'B003', '2027-01-10', 50);
+VALUES (1, 'B001', '2027-03-15', 10),
+       (1, 'B002', '2027-08-20', 2),
+       (2, 'B003', '2027-01-10', 5);
 """)
 conn.commit()
-rows=conn.execute("""
-    SELECT products.name, SUM(batches.quantity)
-    FROM products
-    JOIN batches ON batches.productid = products.id
-    GROUP BY products.id;
-""")
-for row in rows:
-    print(row)
-
 conn.close()
