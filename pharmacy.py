@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 
 def getstock():
     conn=sqlite3.connect("pharmacy.db")
@@ -11,7 +11,7 @@ def getstock():
         GROUP BY products.id;
     """)
     return cursor.fetchall() 
-x=[("Aspirin", 5, 4), ("Cough syrup", 50, 10)]
+
 
 for name, reorder, stock in getstock():
     if stock<=reorder:
@@ -41,14 +41,32 @@ def addproduct(name, unit, buyingprice, sellingprice, reorder, batchnumber, expi
         raise
     finally:
         conn.close()
-def getexpiringproducts():
+def getexpiredproducts():
     conn=sqlite3.connect("pharmacy.db")
     cursor=conn.cursor()
+    today = date.today().isoformat()
     cursor.execute("""
-        SELECT products.name, batches.batchnumber, batches.expirationdate
+        SELECT products.name, batches.batchnumber, batches.quantity, batches.expirationdate
         FROM products
-        JOIN batches on batches.id=products.id
-        WHERE batches.expirationdate <= ? """, (date.today().isoformat(),))
+        JOIN batches on batches.productid=products.id
+        WHERE batches.expirationdate <? AND batches.quantity>0
+        ORDER BY batches.expirationdate ASC """,(today,) )
     products=cursor.fetchall()
     conn.close()
     return products
+
+def getexpiringproducts(days):
+    conn=sqlite3.connect("pharmacy.db")
+    cursor=conn.cursor()
+    today = date.today().isoformat()
+    cutoff = (date.today() + timedelta(days=days)).isoformat()
+    cursor.execute("""
+        SELECT products.name, batches.batchnumber, batches.quantity, batches.expirationdate
+        FROM products
+        JOIN batches on batches.productid=products.id
+        WHERE batches.expirationdate >= ? AND batches.expirationdate <= ? AND batches.quantity>0
+        ORDER BY batches.expirationdate """, (today, cutoff))
+    products=cursor.fetchall()
+    conn.close()
+    return products
+

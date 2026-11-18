@@ -58,7 +58,7 @@ VALUES ('Paracetamol', 'box', 10, 12.5, 20),
 INSERT INTO batches (productid, batchnumber, expirationdate, quantity)
 VALUES (1, 'B001', '2027-03-15', 10),
        (1, 'B002', '2027-08-20', 2),
-       (2, 'B003', '2027-01-10', 5);
+       (2, 'B003', '2026-01-10', 5);
 """)
 conn.commit()
 conn.close()
