@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS sales;
 DROP TABLE IF EXISTS batches;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS medicinefamilies;
 
 CREATE TABLE users (
     id INTEGER PRIMARY KEY,
@@ -50,7 +51,12 @@ CREATE TABLE solditems(
     FOREIGN KEY (saleid) REFERENCES sales(id),
     FOREIGN KEY (batchid) REFERENCES batches(id)
 );
-    
+CREATE TABLE medicinefamilies (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (id) REFERENCES products(id)
+);
 INSERT INTO products (name, unit, buyingprice, sellingprice, reorder)
 VALUES ('Paracetamol', 'box', 10, 12.5, 20),
        ('Amoxicillin', 'strip', 22, 30, 10);
