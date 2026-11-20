@@ -15,6 +15,12 @@ CREATE TABLE users (
     password TEXT NOT NULL,
     role TEXT NOT NULL
 );
+CREATE TABLE medicinefamilies (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (id) REFERENCES products(id)
+);
     
 CREATE TABLE products (
     id INTEGER PRIMARY KEY,
@@ -22,7 +28,9 @@ CREATE TABLE products (
     unit TEXT,
     buyingprice REAL,
     sellingprice REAL,
-    reorder INTEGER NOT NULL DEFAULT 0
+    familyid INTEGER,
+    reorder INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (familyid) REFERENCES medicinefamilies(id)
 );
     
 CREATE TABLE batches(
@@ -50,12 +58,6 @@ CREATE TABLE solditems(
     unitprice REAL NOT NULL,
     FOREIGN KEY (saleid) REFERENCES sales(id),
     FOREIGN KEY (batchid) REFERENCES batches(id)
-);
-CREATE TABLE medicinefamilies (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    FOREIGN KEY (id) REFERENCES products(id)
 );
 INSERT INTO products (name, unit, buyingprice, sellingprice, reorder)
 VALUES ('Paracetamol', 'box', 10, 12.5, 20),

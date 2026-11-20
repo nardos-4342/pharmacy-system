@@ -69,4 +69,18 @@ def getexpiringproducts(days):
     products=cursor.fetchall()
     conn.close()
     return products
-
+def getsolditems(days):
+    conn=sqlite3.connect("pharmacy.db")
+    cursor=conn.cursor()
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    cursor.execute("""
+        SELECT products.name, solditems.quantity, solditems.unitprice, sales.saledate
+        FROM solditems
+        JOIN batches ON solditems.batchid = batches.id
+        JOIN products ON batches.productid = products.id
+        JOIN sales ON solditems.saleid = sales.id
+        WHERE sales.saledate >= ?
+        ORDER BY sales.saledate DESC """, (cutoff,))
+    items=cursor.fetchall()
+    conn.close()
+    return items
