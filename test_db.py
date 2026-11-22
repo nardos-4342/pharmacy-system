@@ -17,18 +17,16 @@ CREATE TABLE users (
 );
 CREATE TABLE medicinefamilies (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    FOREIGN KEY (id) REFERENCES products(id)
+    name TEXT NOT NULL
 );
     
 CREATE TABLE products (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     unit TEXT,
-    buyingprice REAL,
-    sellingprice REAL,
-    familyid INTEGER,
+    buyingprice REAL NOT NULL,
+    sellingprice REAL NOT NULL,
+    familyid INTEGER NOT NULL,
     reorder INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (familyid) REFERENCES medicinefamilies(id)
 );
@@ -59,9 +57,14 @@ CREATE TABLE solditems(
     FOREIGN KEY (saleid) REFERENCES sales(id),
     FOREIGN KEY (batchid) REFERENCES batches(id)
 );
-INSERT INTO products (name, unit, buyingprice, sellingprice, reorder)
-VALUES ('Paracetamol', 'box', 10, 12.5, 20),
-       ('Amoxicillin', 'strip', 22, 30, 10);
+INSERT INTO medicinefamilies (name)
+VALUES ('Antibiotics'),
+       ('Hygiene and cosmetics'),
+       ('Urinary'),
+       ('Other');
+INSERT INTO products (name, unit, buyingprice, sellingprice, reorder, familyid)
+VALUES ('Paracetamol', 'box', 10, 12.5, 20, 4),
+       ('Amoxicillin', 'strip', 22, 30, 10, 1);
 
 INSERT INTO batches (productid, batchnumber, expirationdate, quantity)
 VALUES (1, 'B001', '2027-03-15', 10),

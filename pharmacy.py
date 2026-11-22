@@ -4,23 +4,18 @@ from datetime import date, timedelta
 def getstock():
     conn=sqlite3.connect("pharmacy.db")
     cursor=conn.cursor()
+    today = date.today().isoformat()
     cursor.execute("""
-        SELECT products.name, products.reorder, SUM(batches.quantity)
+        SELECT products.name, products.reorder, COALESCE(SUM(batches.quantity), 0)
         FROM products
-        JOIN batches ON batches.productid = products.id
+        LEFT JOIN batches ON batches.productid = products.id AND batches.expirationdate>=?
         GROUP BY products.id;
-    """)
-    return cursor.fetchall() 
+    """, (today,))
+    rows=cursor.fetchall()
+    conn.close()
+    return rows
 
-
-for name, reorder, stock in getstock():
-    if stock<=reorder:
-        print(name, stock, "LOW")
-    else:
-        print(name, stock, "GOOD")
-
-
-def addproduct(name, unit, buyingprice, sellingprice, reorder, batchnumber, expirationdate, quantity):
+def addproduct(name, unit, buyingprice, sellingprice, reorder,familyid, batchnumber, expirationdate, quantity):
     if quantity <=0:
         raise ValueError("Quantity must be greater than zero.")
     conn=sqlite3.connect("pharmacy.db")
@@ -28,7 +23,7 @@ def addproduct(name, unit, buyingprice, sellingprice, reorder, batchnumber, expi
         cursor=conn.cursor()
         cursor.execute(
             "INSERT INTO products (name, unit, buyingprice, sellingprice, reorder) VALUES (?, ?, ?, ?, ?)",
-            (name, unit, buyingprice, sellingprice, reorder)
+            (name, unit, buyingprice, sellingprice, reorder, familyid)
         )
         productid=cursor.lastrowid
         cursor.execute(
@@ -37,8 +32,6 @@ def addproduct(name, unit, buyingprice, sellingprice, reorder, batchnumber, expi
         )
         conn.commit()
         return productid
-    except Exception:
-        raise
     finally:
         conn.close()
 def getexpiredproducts():
@@ -84,3 +77,43 @@ def getsolditems(days):
     items=cursor.fetchall()
     conn.close()
     return items
+
+def getfamilies():
+    conn=sqlite3.connect("pharmacy.db")
+    cursor=conn.cursor()
+    today=date.today().isoformat()
+    cursor.execute("""
+        SELECT medicinefamilies.id, medicinefamilies.name, COALESCE(SUM(batches.quantity), 0)
+        FROM medicinefamilies
+        LEFT JOIN products ON products.familyid=medicinefamilies.id
+        LEFT JOIN batches ON batches.productid=products.id AND batches.expirationdate>=?
+        GROUP BY medicinefamilies.id; """, (today, ))
+    rows=cursor.fetchall()
+    conn.close()
+    return rows
+
+def getfamilymedicines(familyid):
+    conn=sqlite3.connect("pharmacy.db")
+    cursor=conn.cursor()
+    today=date.today().isoformat()
+    cursor.execute("""
+        SELECT products.id, products.name, COALESCE(SUM(batches.quantity), 0)
+        FROM products
+        LEFT JOIN batches ON batches.productid=products.id AND batches.expirationdate>=?
+        WHERE products.familyid=?
+        GROUP BY products.id; """, (today, familyid))
+    rows=cursor.fetchall()
+    conn.close()
+    return rows
+if __name__ == "__main__":
+    for name, reorder, stock in getstock():
+        if stock <= reorder:
+            print(name, stock, "LOW")
+        else:
+            print(name, stock, "GOOD")
+
+    print(getfamilies())
+    print(getfamilymedicines(1))
+if __name__ == "__main__":
+    print(getfamilymedicines(1))
+    print(getfamilymedicines(4))
