@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 def getstock():
     conn=sqlite3.connect("pharmacy.db")
@@ -112,8 +112,31 @@ if __name__ == "__main__":
         else:
             print(name, stock, "GOOD")
 
-    print(getfamilies())
-    print(getfamilymedicines(1))
-if __name__ == "__main__":
-    print(getfamilymedicines(1))
-    print(getfamilymedicines(4))
+def addstock(productid, batchnumber, expirationdate, quantity):
+    if quantity<=0:
+        raise ValueError("Quantity must be greater than zero.")
+    try:
+        parsed=datetime.strptime(expirationdate, "%Y-%m-%d").date()
+    except ValueError:
+        raise ValueError("Expiration date must be in YYYY-MM-DD format.")
+    expirationdate=parsed.isoformat()
+    if expirationdate < date.today().isoformat():
+        raise ValueError("Expiration date cannot be in the past.")
+    conn=sqlite3.connect("pharmacy.db")
+    try:
+        cursor=conn.cursor()
+        cursor.execute("SELECT id FROM products WHERE id=?", (productid, ))
+        if cursor.fetchone() is None:
+            raise ValueError("No such product.")
+        cursor.execute("SELECT id FROM batches WHERE productid=? AND batchnumber=?",
+                       (productid, batchnumber))
+        if cursor.fetchone is not None:
+            raise ValueError("The batch number already exists.")
+        cursor.execute("INSERT INTO batches(productid, batchnumber, expirationdate, quantity) "
+                       "VALUES(?, ?, ?, ?)", (productid, batchnumber, expirationdate, quantity))
+        conn.commit()
+        return cursor.lastrowid
+    finally:
+        conn.close()
+
+
