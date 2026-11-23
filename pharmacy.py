@@ -138,5 +138,42 @@ def addstock(productid, batchnumber, expirationdate, quantity):
         return cursor.lastrowid
     finally:
         conn.close()
-
-
+def sell(batchid, quantity, userid):
+    if quantity<=0:
+            raise ValueError("Quantity should be above 0.")
+    conn=sqlite3.connect("pharmacy.db")
+    try:
+        cursor=conn.cursor()
+        cursor.execute("""
+            SELECT batches.expirationdate, batches.quantity, products.sellingprice
+            FROM batches
+            JOIN products ON products.id=batches.productid 
+            WHERE batches.id=?""", (batchid, ))
+        row=cursor.fetchone()
+        if row is None:
+            raise ValueError("No such batch.")
+        expirationdate, available, sellingprice=row
+        if expirationdate < date.today().isoformat():
+            raise ValueError("The batch has expired.")
+        if quantity>available:
+            raise ValueError("The requested quantity is above the availiable amount.")
+        total=quantity*sellingprice
+        saledate =datetime.now().isoformat(sep=" ", timespec="seconds")    
+        
+        cursor.execute("INSERT INTO sales(userid, saledate, total)"
+                       "VALUES (?, ?, ?)", (userid, saledate, total))
+        saleid=cursor.lastrowid
+        cursor.execute("INSERT INTO solditems(saleid, batchid, quantity, sellingprice) " 
+                       "Values (?, ?, ?,?)", (saleid, batchid, quantity, sellingprice))
+        cursor.execute(
+            "UPDATE batches SET quantity = quantity - ? WHERE id = ? AND quantity >= ?",
+            (quantity, batchid, quantity)
+        )
+        if cursor.rowcount == 0:
+            raise ValueError("Not enough stock in this batch.")
+        
+        conn.commit()
+        return saleid
+    finally:
+        conn.close()
+        

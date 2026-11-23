@@ -57,19 +57,35 @@ CREATE TABLE solditems(
     FOREIGN KEY (saleid) REFERENCES sales(id),
     FOREIGN KEY (batchid) REFERENCES batches(id)
 );
+INSERT INTO users (username, password, role)
+VALUES ('owner', 'temp123', 'owner'),
+       ('pharmacist', 'temp123', 'pharmacist'),
+       ('cashier', 'temp123', 'cashier');
+
 INSERT INTO medicinefamilies (name)
 VALUES ('Antibiotics'),
        ('Hygiene and cosmetics'),
        ('Urinary'),
        ('Other');
+
 INSERT INTO products (name, unit, buyingprice, sellingprice, reorder, familyid)
-VALUES ('Paracetamol', 'box', 10, 12.5, 20, 4),
-       ('Amoxicillin', 'strip', 22, 30, 10, 1);
+VALUES ('Paracetamol 500mg tablet', 'box', 10, 12.5, 20, 4),
+       ('Amoxicillin 500mg capsule', 'strip', 22, 30, 10, 1),
+       ('Ciprofloxacin 500mg tablet', 'strip', 35, 50, 8, 1),
+       ('Hand sanitizer 100ml', 'bottle', 25, 40, 5, 2),
+       ('Nitrofurantoin 100mg capsule', 'strip', 28, 45, 6, 3),
+       ('Ibuprofen 200mg tablet', 'box', 8, 11, 15, 4);
 
 INSERT INTO batches (productid, batchnumber, expirationdate, quantity)
 VALUES (1, 'B001', '2027-03-15', 10),
-       (1, 'B002', '2027-08-20', 2),
-       (2, 'B003', '2026-01-10', 5);
+       (1, 'B002', '2027-08-20', 30),
+       (2, 'B003', '2026-01-10', 5),
+       (2, 'B004', '2026-12-10', 8),
+       (3, 'B005', '2027-05-01', 40),
+       (4, 'B006', '2027-01-31', 3),
+       (5, 'B007', '2026-10-01', 12),
+       (6, 'B008', '2027-06-30', 0),
+       (6, 'B009', '2027-09-30', 25);
 """)
 conn.commit()
 conn.close()
