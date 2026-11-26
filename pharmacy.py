@@ -176,4 +176,26 @@ def sell(batchid, quantity, userid):
         return saleid
     finally:
         conn.close()
-        
+
+def getlowstock():
+    conn = sqlite3.connect("pharmacy.db")
+    cursor = conn.cursor()
+    today = date.today().isoformat()
+    cursor.execute("""
+        SELECT products.id, products.name, medicinefamilies.name,
+               COALESCE(SUM(batches.quantity), 0) AS stock,
+               products.reorder
+        FROM products
+        JOIN medicinefamilies ON medicinefamilies.id = products.familyid
+        LEFT JOIN batches ON batches.productid = products.id
+                         AND batches.expirationdate >= ?
+        GROUP BY products.id
+        HAVING stock <= products.reorder
+        ORDER BY stock - products.reorder, products.name;
+    """, (today,))
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+print("LOW STOCK", getlowstock())
+    
