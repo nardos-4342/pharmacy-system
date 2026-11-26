@@ -196,6 +196,3 @@ def getlowstock():
     rows = cursor.fetchall()
     conn.close()
     return rows
-
-print("LOW STOCK", getlowstock())
-    
