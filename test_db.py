@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS batches;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS medicinefamilies;
+DROP TABLE IF EXISTS history;
 
 CREATE TABLE users (
     id INTEGER PRIMARY KEY,
@@ -56,6 +57,14 @@ CREATE TABLE solditems(
     unitprice REAL NOT NULL,
     FOREIGN KEY (saleid) REFERENCES sales(id),
     FOREIGN KEY (batchid) REFERENCES batches(id)
+);
+CREATE TABLE history (
+    id INTEGER PRIMARY KEY,
+    userid INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    details TEXT,
+    createdat TEXT NOT NULL,
+    FOREIGN KEY (userid) REFERENCES users(id)
 );
 INSERT INTO users (username, password, role)
 VALUES ('owner', 'temp123', 'owner'),
